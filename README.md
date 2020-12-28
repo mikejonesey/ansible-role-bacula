@@ -1,31 +1,33 @@
 Role Name
 =========
 
-A brief description of the role goes here.
+This role sets up the basic requirements for a bacula server. It is intended to be run on a Debian target. Baculum will web server will also be setup, which can be used to configure the dir and storage (just jump into bconsole to spawn some volumes).
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+A debian host or VM that meets the minumum system requirements of bacula.
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+todo...
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+no other roles are required.
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+Bacula servers are expected to be placed within a group called: "bacula"
 
-    - hosts: servers
+    - hosts: bacula
+      become: yes
       roles:
-         - { role: username.rolename, x: 42 }
+        - bacula
+      tags: bacula
 
 License
 -------
@@ -35,4 +37,4 @@ BSD
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+Michael Jones <mj@mikejonesey.co.uk>

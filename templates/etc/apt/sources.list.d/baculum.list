@@ -1,0 +1,2 @@
+deb http://bacula.org/downloads/baculum/stable/debian buster main
+deb-src http://bacula.org/downloads/baculum/stable/debian buster main

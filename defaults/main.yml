@@ -1,2 +1,7 @@
 ---
 # defaults file for bacula
+
+#bacula_db: mysql
+bacula_db: pgsql
+
+bacula_server_dir: "dir-name"

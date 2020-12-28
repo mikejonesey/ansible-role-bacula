@@ -1,0 +1,66 @@
+# Debian bacula install
+
+- name: Install Bacula Deps
+  apt:
+    name: "{{ packages }}"
+    state: "present"
+  vars:
+    packages:
+      - wget
+      - gnupg
+
+- name: Choose Packages mysql vs postgresql
+  set_fact:
+    bacula_packages:
+      - bacula-bscan
+      - bacula-common
+      - bacula-console
+      - bacula-director
+      - bacula-fd
+      - bacula-sd
+      - bacula-server
+      - bacula-common-mysql
+      - bacula-director-mysql
+  when: 'bacula_db == "mysql"'
+
+- name: Choose Packages mysql vs postgresql
+  set_fact:
+    bacula_packages:
+      - bacula-bscan
+      - bacula-common
+      - bacula-console
+      - bacula-director
+      - bacula-fd
+      - bacula-sd
+      - bacula-server
+      - bacula-common-pgsql
+      - bacula-director-pgsql
+  when: 'bacula_db == "pgsql"'
+  
+- name: Install Bacula
+  apt:
+    name: "{{ bacula_packages }}"
+    state: "present"
+  
+- name: Add Baculum (bacula web ui) Apt signing key
+  apt_key:
+    url: http://bacula.org/downloads/baculum/baculum.pub
+    state: present
+
+- name: Add Baculum repos
+  template:
+    src: etc/apt/sources.list.d/baculum.list
+    dest: /etc/apt/sources.list.d/baculum.list
+    
+- name: Install Bacula
+  apt:
+    name: "{{ packages }}"
+    state: "present"
+  vars:
+    packages:
+      - baculum-api
+      - baculum-api-apache2
+      - baculum-common
+      - baculum-web
+      - baculum-web-apache2
+    
