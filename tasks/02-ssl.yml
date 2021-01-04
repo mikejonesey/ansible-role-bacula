@@ -1,0 +1,93 @@
+- name: Install openssl
+  package:
+    name: "{{ packages }}"
+    state: present
+  vars:
+    packages:
+      - openssl
+      - git
+      - expect
+
+#- name: Create SSL Directory
+#  file:
+#    path: "/etc/bacula/ssl"
+#    state: directory
+
+#- name: Generate a DH
+#  shell: >
+#    openssl dhparam -out dh2048.pem -5 2048
+#  args:
+#    chdir: /etc/bacula/ssl
+#    creates: /etc/bacula/ssl/dh2048.pem
+
+#- name: Upload SSL Template
+#  template:
+#    src: etc/bacula/ssl/ssl.conf
+#    dest: /etc/bacula/ssl/ssl.conf
+
+#- name: Create SSL Certs
+#  shell: >
+#    openssl req -new -x509 -nodes -out bacula-ca.crt -keyout bacula-ca.key -days 3650 -config /etc/bacula/ssl/ssl.conf
+#  args:
+#    chdir: /etc/bacula/ssl
+#    creates: /etc/bacula/ssl/bacula-ca.crt
+
+##################################################
+# EasyRSA Setup
+##################################################
+
+- name: "Checkout easyrsa"
+  git:
+    update: yes
+    repo: "https://github.com/OpenVPN/easy-rsa"
+    dest: "/usr/local/src/easyrsa"
+
+- name: "Copy easyrsa3 to bacula"
+  shell: >
+    cp -r /usr/local/src/easyrsa/easyrsa3 /etc/bacula/easyrsa
+  args:
+    creates: /etc/bacula/easyrsa
+    
+- name: "Upload easyrsa vars"
+  template:
+    src: "etc/bacula/easyrsa/vars.j2"
+    dest: "/etc/bacula/easyrsa/vars"
+  
+- name: "Upload build-ca script"
+  template:
+    src: "etc/bacula/easyrsa/build-ca-script.exp.j2"
+    dest: "/etc/bacula/easyrsa/build-ca-script.exp"
+    mode: "0755"
+
+- name: "Init PKI"
+  shell: >
+    ./easyrsa init-pki
+  args:
+    creates: /etc/bacula/easyrsa/pki
+    chdir: /etc/bacula/easyrsa
+
+- name: "Setup CA Certificate"
+  shell: >
+    ./build-ca-script.exp
+  args:
+    creates: /etc/bacula/easyrsa/pki/ca.crt
+    chdir: /etc/bacula/easyrsa
+
+- name: "Stat dh"
+  stat: path=/etc/bacula/easyrsa/pki/dh.pem
+  register: dh_stat
+
+- name: "Build Diffie Hellman"
+  shell: chdir=/etc/bacula/easyrsa nohup ./easyrsa gen-dh
+  async: 20000
+  poll: 0
+  when: dh_stat.stat.exists == False
+    
+- name: Setup Main Bacula DIR Certificate
+  shell: >
+    ./easyrsa build-serverClient-full "{{ bacula_easyrsa_main_cn }}" nopass
+  args:
+    creates: /etc/bacula/easyrsa/pki/issued/main.crt
+    chdir: /etc/bacula/easyrsa
+
+##################################################

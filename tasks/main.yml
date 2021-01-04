@@ -2,52 +2,7 @@
 # tasks file for bacula
 
 - name: Install Bacula on Debian
-  include_tasks: 01-install-debian.yml
-  when: "ansible_distribution == 'Debian'"
+  include_tasks: 01-install.yml
 
-- name: Get the db password
-  shell: >
-    /usr/bin/grep ^dbc_dbpass /etc/dbconfig-common/bacula-director-* | /usr/bin/sed "s/'$//;s/.*'//"
-  register: bacula_db_pass
-
-- name: Update backular-dir config
-  lineinfile:
-    path: "/etc/bacula/bacula-dir.conf"
-    regexp: '.*dbname.*=.*".*";.*dbuser.*=.*".*";.*dbpassword.*=.*".*"'
-    line: '  dbname = "bacula"; dbuser = "bacula"; dbpassword = "{{ bacula_db_pass.stdout }}"'
-
-- name: Start bacular-dir
-  systemd:
-    name: "bacula-director"
-    state: started
-    enabled: yes
-
-- name: Upload sudoers config file
-  template:
-    src: etc/sudoers.d/bacula-web-ctrl
-    dest: /etc/sudoers.d/bacula-web-ctrl
-    owner: root
-    group: root
-    mode: '0644'
-
-- name: Install openssl
-  package:
-    name: openssl
-    state: present
-
-- name: Create SSL Directory
-  file:
-    path: "/etc/bacula/ssl"
-    state: directory
-    
-- name: Generate a DH
-  shell: >
-    openssl dhparam -out dh2048.pem -5 2048
-  args:
-    chdir: /etc/bacula/ssl
-
-- name: Create SSL Certs
-  shell: >
-    openssl req -new -x509 -nodes -out bacula.pem -keyout bacula.pem -days 3650
-  args:
-    chdir: /etc/bacula/ssl
+- name: Setup TLS Certs/Keys
+  include_tasks: 02-ssl.yml

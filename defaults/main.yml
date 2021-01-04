@@ -5,3 +5,10 @@
 bacula_db: pgsql
 
 bacula_server_dir: "dir-name"
+
+bacula_easyrsa_ca_cn: "ca.{{ ansible_hostname }}"
+bacula_easyrsa_main_cn: "{{ ansible_hostname }}"
+
+bacula_EASYRSA_REQ_ORG: ACME
+bacula_EASYRSA_REQ_EMAIL: example@example.com
+bacula_EASYRSA_REQ_OU: ACME
